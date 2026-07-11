@@ -1,0 +1,62 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id       Int    @id @default(autoincrement())
+  name     String
+  email    String @unique
+  password String
+
+  account Account?
+
+  sentTransactions     Transaction[] @relation("SentTransactions")
+  receivedTransactions Transaction[] @relation("ReceivedTransactions")
+
+  idempotencyKeys IdempotencyKey[]
+}
+
+model Account {
+  id      Int @id @default(autoincrement())
+  balance Int
+
+  userId Int  @unique
+  user   User @relation(fields: [userId], references: [id])
+}
+
+model Transaction {
+  id Int @id @default(autoincrement())
+
+  senderId   Int
+  receiverId Int
+
+  sender   User @relation("SentTransactions", fields: [senderId], references: [id])
+  receiver User @relation("ReceivedTransactions", fields: [receiverId], references: [id])
+
+  amount Int
+
+  createdAt DateTime @default(now())
+
+  idempotencyKeys IdempotencyKey[]
+}
+
+model IdempotencyKey {
+  id Int @id @default(autoincrement())
+
+  key String @unique
+
+  status String
+
+  userId Int
+  user   User @relation(fields: [userId], references: [id])
+
+  transactionId Int?
+  transaction   Transaction? @relation(fields: [transactionId], references: [id])
+
+  createdAt DateTime @default(now())
+}
