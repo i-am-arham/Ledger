@@ -20,7 +20,7 @@ export async function userSignUp(req: Request, res: Response) {
         phone: phone,
         account: {
           create: {
-            balance: 0,
+            balance: 10000,
           },
         },
       },

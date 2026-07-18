@@ -1,7 +1,9 @@
-// import { Router } from "express";
+import { Router } from "express";
+import { authMiddelware } from "../middleware/auth.middleware.js";
+import { getBalance } from "../controllers/account.controllers.js";
 
-// const account = Router();
+const account = Router();
 
-// account.get("/balance");
+account.get("/balance", authMiddelware, getBalance);
 
-// export default account;
+export default account;

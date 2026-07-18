@@ -30,67 +30,69 @@ export async function transferMoney(req: Request, res: Response) {
       });
     }
 
-    const transaction = await prisma.$transaction(async (tx : Prisma.TransactionClient)  => {
-      await tx.idempotencyKey.create({
-        data: {
-          key,
-          userId: senderId,
-          status: IdempotencyStatus.PENDING,
-        },
-      });
-
-      const sender = await tx.account.findUnique({
-        where: {
-          userId: senderId,
-        },
-      });
-
-      if (!sender) throw new Error("Sender account not found");
-
-      if (sender.balance < amount) throw new Error("Insufficient balance");
-
-      await tx.account.update({
-        where: {
-          userId: senderId,
-        },
-        data: {
-          balance: {
-            decrement: amount,
+    const transaction = await prisma.$transaction(
+      async (tx: Prisma.TransactionClient) => {
+        await tx.idempotencyKey.create({
+          data: {
+            key,
+            userId: senderId,
+            status: IdempotencyStatus.PENDING,
           },
-        },
-      });
+        });
 
-      await tx.account.update({
-        where: {
-          userId: receiverId,
-        },
-        data: {
-          balance: {
-            increment: amount,
+        const sender = await tx.account.findUnique({
+          where: {
+            userId: senderId,
           },
-        },
-      });
+        });
 
-      const createdTransaction = await tx.transaction.create({
-        data: {
-          senderId,
-          receiverId,
-          amount,
-        },
-      });
+        if (!sender) throw new Error("Sender account not found");
 
-      await tx.idempotencyKey.update({
-        where: {
-          key,
-        },
-        data: {
-          status: IdempotencyStatus.SUCCESS,
-          transactionId: createdTransaction.id,
-        },
-      });
+        if (sender.balance < amount) throw new Error("Insufficient balance");
 
-      return createdTransaction;
-    });
+        await tx.account.update({
+          where: {
+            userId: senderId,
+          },
+          data: {
+            balance: {
+              decrement: amount,
+            },
+          },
+        });
+
+        await tx.account.update({
+          where: {
+            userId: receiverId,
+          },
+          data: {
+            balance: {
+              increment: amount,
+            },
+          },
+        });
+
+        const createdTransaction = await tx.transaction.create({
+          data: {
+            senderId,
+            receiverId,
+            amount,
+          },
+        });
+
+        await tx.idempotencyKey.update({
+          where: {
+            key,
+          },
+          data: {
+            status: IdempotencyStatus.SUCCESS,
+            transactionId: createdTransaction.id,
+          },
+        });
+
+        return createdTransaction;
+      },
+    );
 
     res.status(201).json(transaction);
   } catch (error) {
@@ -108,6 +110,7 @@ export async function transferMoney(req: Request, res: Response) {
     });
   }
 }
+
 
 
 
