@@ -1,6 +1,6 @@
 generator client {
   provider = "prisma-client"
-  output   = "../generated/prisma"
+  output   = "../src/generated/prisma"
 }
 
 datasource db {
@@ -51,7 +51,7 @@ model IdempotencyKey {
 
   key String @unique
 
-  status String
+  status IdempotencyStatus
 
   userId Int
   user   User @relation(fields: [userId], references: [id])
@@ -60,4 +60,9 @@ model IdempotencyKey {
   transaction   Transaction? @relation(fields: [transactionId], references: [id])
 
   createdAt DateTime @default(now())
+}
+
+enum IdempotencyStatus {
+  SUCCESS
+  FAILED
 }

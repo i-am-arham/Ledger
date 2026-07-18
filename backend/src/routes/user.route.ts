@@ -1,7 +1,7 @@
-import { Router } from "express";
+// import { Router } from "express";
 
-const user = Router();
+// const user = Router();
 
-user.get("/me");
+// user.get("/me");
 
-export default user;
+// export default user;

@@ -1,7 +1,7 @@
-import { Router } from "express";
+// import { Router } from "express";
 
-const account = Router();
+// const account = Router();
 
-account.get("/balance");
+// account.get("/balance");
 
-export default account;
+// export default account;
